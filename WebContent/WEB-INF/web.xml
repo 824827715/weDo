@@ -4,7 +4,7 @@
 	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee                       
 	http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
 	
-	<display-name>ZHBY-jservice</display-name>
+	<display-name>ZHBY-API</display-name>
 	
 	<welcome-file-list>
 		<welcome-file>index.jsp</welcome-file>
@@ -52,11 +52,9 @@
 	<listener>
 		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
 	</listener>
-	
 	<listener>
 		<listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
 	</listener>
-	
 	<!-- 防止内存泄漏 -->
 	<listener>
 		<listener-class>org.springframework.web.util.IntrospectorCleanupListener</listener-class>
@@ -64,41 +62,17 @@
 	
 	<filter>
 		<filter-name>security</filter-name>
-		<filter-class>com.zhby.sysapp.servlet.SessionFilter</filter-class>
+		<filter-class>com.zhby.core.servlet.SessionFilter</filter-class>
 		<init-param>
 			<param-name>loginUrl</param-name>
 			<param-value>/account/entry.do</param-value>
 		</init-param>
-		<init-param>
-	      <param-name>whiteList</param-name>
-	      <param-value>/action/cnpc/report/*,</param-value>
-    	</init-param>
 	</filter>
 	<filter-mapping>
 		<filter-name>security</filter-name>
 		<url-pattern>/action/*</url-pattern>
 	</filter-mapping>
-	
-	<!-- car -->
-	<servlet>
-		<servlet-name>QRServlet</servlet-name>
-		<servlet-class>com.zhby.maintenance.servlet.QRServlet</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>QRServlet</servlet-name>
-		<url-pattern>/client/qr_code</url-pattern>
-	</servlet-mapping>	
-	
-	<!-- WX QR -->
-	<servlet>
-		<servlet-name>TenpayQRCodeServlet</servlet-name>
-		<servlet-class>com.tenpay.servlet.QRCodeServlet</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>TenpayQRCodeServlet</servlet-name>
-		<url-pattern>/tenpay_code_url</url-pattern>
-	</servlet-mapping>
-	
+
     <!-- 错误页 -->
     <error-page>
         <error-code>401</error-code>

@@ -31,7 +31,7 @@
 		<property name="defaultEncoding" value="utf-8" />
 		<property name="cacheSeconds" value="0" />
 	</bean>	
-	
+
 	<!-- 数据源 -->
      <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
 		<property name="driverClassName" value="${jdbc.driver}" />
@@ -41,7 +41,7 @@
 		<property name="initialSize" value="2" />
 		<property name="minIdle" value="5" />
 		<property name="maxIdle" value="10" />
-		<property name="maxActive" value="10" />
+		<property name="maxActive" value="5" />
 		<property name="maxWait" value="100000" />
 	</bean>
 	
@@ -49,19 +49,11 @@
 	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
 		<property name="dataSource" ref="dataSource" />
 	</bean>
-	
-	<!-- 主键生成策略 -->
-	<bean id="keyId" class="org.springframework.jdbc.support.incrementer.MySQLMaxValueIncrementer">
-		<property name="incrementerName" value="tbl_key_id"/>
-		<property name="columnName" value="seq_id"/>
-		<property name="cacheSize" value="10"/>
-		<property name="dataSource" ref="dataSource"/>
-	</bean>	
-		
+
 	<context:annotation-config />
 	<context:component-scan base-package="com.zhby.*.service" />
 	<tx:annotation-driven />
-		
+	
 	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
 		<property name="dataSource" ref="dataSource" />
 		<property name="configLocation" value="classpath:mybatis/sqlMapConfig.xml" />
@@ -79,15 +71,13 @@
 	
 	<!-- 接口配置 -->
 	<import resource = "spring/spring-tran.xml"/>
-	<!-- 数据字典 -->
-	<import resource = "spring/spring-dic.xml"/>
-	<!-- 文件上传 -->
+	
 	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
 		<property name="maxUploadSize">
-			<value>20971520</value>
+			<value>20971520</value> <!-- 20MB -->
 		</property>
 		<property name="maxInMemorySize">
-			<value>1048576</value>
+			<value>1048576</value><!-- 1MB -->
 		</property>
 	</bean>	
 </beans>

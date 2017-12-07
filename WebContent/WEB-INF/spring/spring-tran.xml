@@ -13,8 +13,8 @@
 
 	<bean id="tranConfig" class="com.zhby.core.tran.TranConfig">
 		<property name="configFile" value="${tran.config.file}" />
-		<property name="maxThread" value="${tran.max.thread}" />
 		<property name="domain" value="${domain}" />
+		<property name="maxThread" value="${tran.max.thread}" />
 	</bean>
 	
 	<bean id="tranFile" class="com.zhby.core.tran.LoadTranFile"/>
