@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zhby.sysapp.mapper.SysUserMapper">
+
+	<resultMap type="SysUserObj" id="resultMap">
+		<id property="id" column="id" />
+		<result property="code" column="code" />
+		<result property="orgCode" column="org_code" />
+		<result property="orgCodeName" column="org_code_name" />
+		<result property="password" column="password" />
+		<result property="name" column="name" />
+		<result property="status" column="status" />
+		<result property="remark" column="remark" />
+		<result property="creator" column="creator" />
+		<result property="creationDate" column="creation_date" />
+		<result property="modifier" column="modifier" />
+		<result property="modificationDate" column="modification_date" />
+	</resultMap>
+	
+	<sql id="table">
+		tbl_sys_user
+	</sql>
+	
+	<sql id="columns">
+		 id, code,org_code, password, name, status, remark, creator, creation_date, modifier, modification_date
+	</sql>
+	
+	<sql id="conditions">
+		<where>
+			<if test="id!=null">
+				and id = #{id,jdbcType=NUMERIC}
+			</if>
+			<if test="code != null and code != ''">
+				and code = #{code,jdbcType=VARCHAR}
+			</if>
+			<if test="password != null and password != ''">
+				and password = #{password,jdbcType=VARCHAR}
+			</if>
+			<if test="orgCode != null and orgCode != ''">
+				and org_code = #{orgCode,jdbcType=VARCHAR}
+			</if>
+		</where>
+	</sql>
+	
+	<select id="getById" parameterType="long" resultMap="resultMap">
+		select <include refid="columns"/>  
+		from <include refid="table"/> 
+		where id = #{id,jdbcType=NUMERIC}
+	</select>
+	
+	<select id="getByCode" parameterType="string" resultMap="resultMap">
+		select <include refid="columns"/>  
+		from <include refid="table"/> 
+		where code = #{code}
+	</select>
+	
+	<select id="checkCode" parameterType="string" resultType="int">
+		select count(*) from 
+		<include refid="table"/>
+		where code = #{code}
+	</select>
+	
+	<select id="list" parameterType="SysUserObj" resultMap="resultMap">
+		select a.* , b.name As org_code_name 
+		from <include refid="table"/> a 
+		left join tbl_sys_org b on a.org_code=b.code
+		<include refid="conditions"/> 
+	</select>
+	
+	<select id="edit" parameterType="SysUserObj" resultMap="resultMap">
+		select <include refid="columns"/>  
+		from <include refid="table"/> 
+		<include refid="conditions"/> 
+	</select>
+
+	<insert id="insert" useGeneratedKeys="true" keyProperty="id"  parameterType="SysUserObj">
+		insert into <include refid="table" /> (
+			code, org_code,password, name, status, remark, creator, creation_date
+		) values (
+			#{code}, #{orgCode},#{password}, #{name}, #{status,jdbcType=VARCHAR}, #{remark,jdbcType=VARCHAR}, #{creator,jdbcType=VARCHAR}, now()
+		)
+	</insert>
+
+	<update id="update" parameterType="SysUserObj">
+		update <include refid="table" />
+		<set>
+			<if test="name != null and name != ''">name = #{name},</if>
+			<if test="orgCode != null and orgCode != ''">org_code = #{orgCode},</if>
+			<if test="password != null and password != ''">password = #{password},</if>
+			<if test="status != null and status != ''">status = #{status},</if>
+			<if test="remark != null and remark != ''">remark = #{remark},</if>
+			<if test="modifier != null and modifier != ''">modifier = #{modifier},</if>
+			modification_date = now()
+		</set>
+		where id = #{id}
+	</update>
+
+	<delete id="delete" parameterType="SysUserObj">
+		delete from <include refid="table" /> 
+		<include refid="conditions"/> 
+	</delete>
+	
+	<update id="changeStatus" parameterType="hashmap">
+		update <include refid="table" /> 
+		<set>
+			<if test="status != null and status != ''">status = #{status},</if>
+			<if test="modifier != null and modifier != ''">modifier = #{modifier},</if>
+			modification_date = now()
+		</set>
+		where id = #{id}
+	</update>
+</mapper>

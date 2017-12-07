@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zhby.sysapp.mapper.SysFuncMapper">
+
+	<resultMap type="SysFuncObj" id="resultMap">
+		<id property="id" column="id" />
+		<result property="parentId" column="parent_id" />
+		<result property="name" column="name" />
+		<result property="url" column="url" />
+		<result property="creator" column="creator" />
+		<result property="creationDate" column="creation_date" />
+		<result property="modifier" column="modifier" />
+		<result property="modificationDate" column="modification_date" />
+		<result property="childs" column="childs" />
+		<result property="parentName" column="parent_name" />
+		<result property="checked" column="checked" />
+	</resultMap>
+	
+	<sql id="table">
+		tbl_sys_func
+	</sql>
+	
+	<sql id="columns">
+		 id, parent_id, name, url, creator, creation_date, modifier, modification_date
+	</sql>
+	
+	<sql id="conditions">
+		<where>
+			<if test="id!=null">
+				and id = #{id,jdbcType=NUMERIC}
+			</if>
+			<if test="parentId!=null">
+				and parent_id = #{parentId,jdbcType=NUMERIC}
+			</if>
+		</where>
+	</sql>
+	
+	<select id="getById" parameterType="long" resultMap="resultMap">
+		select <include refid="columns"/>  
+		from <include refid="table"/> 
+		where id = #{id,jdbcType=NUMERIC}
+	</select>
+	
+	<select id="query" parameterType="long" resultMap="resultMap">
+      select 
+      a.id,parent_id,a.name,(select count(*) from tbl_sys_func where parent_id=a.id) as childs,
+      (case when b.func_id is null then 'false' else 'true' end) as checked
+      from tbl_sys_func a left join (select func_id from tbl_sys_func_role where role_id=#{id,jdbcType=NUMERIC}) b on a.id=b.func_id
+       order by a.id asc
+	</select>
+	
+	<select id="list" parameterType="SysFuncObj" resultMap="resultMap">
+		select <include refid="columns"/>, (select count(*) from <include refid="table"/> where parent_id = t.id) as childs  
+		from <include refid="table"/> t
+		where t.parent_id = #{parentId}
+		order by t.id asc
+	</select>
+	
+	<select id="edit" parameterType="SysFuncObj" resultMap="resultMap">
+		select <include refid="columns"/>, (select name from tbl_sys_func where id = a.parent_id) parent_name  
+		from <include refid="table"/> a
+		<include refid="conditions"/> 
+	</select>
+
+	<insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="SysFuncObj">
+		insert into <include refid="table" /> (
+			parent_id, name, url, creator, creation_date
+		) values (
+			#{parentId,jdbcType=NUMERIC}, 
+			#{name,jdbcType=VARCHAR}, 
+			#{url,jdbcType=VARCHAR}, 
+			#{creator,jdbcType=VARCHAR},
+			now()
+		)
+	</insert>
+
+	<update id="update" parameterType="SysFuncObj">
+		update <include refid="table" />
+		<set>
+			<if test="parentId != null and parentId != ''">parent_id = #{parentId,jdbcType=NUMERIC},</if>
+			<if test="name != null and name != ''">name = #{name,jdbcType=VARCHAR},</if>
+			<if test="url != null and url != ''">url = #{url,jdbcType=VARCHAR},</if>
+			<if test="modifier != null and modifier != ''">modifier = #{modifier,jdbcType=VARCHAR},</if>
+			modification_date = now()
+		</set>
+		where id = #{id}
+	</update>
+
+	<delete id="delete" parameterType="SysFuncObj">
+		delete from <include refid="table" /> 
+		<include refid="conditions"/> 
+	</delete>
+	
+	<select id="getChilds" parameterType="SysFuncObj" resultType="int">
+		select count(1) from <include refid="table"/> t where t.parent_id = #{id,jdbcType=NUMERIC}
+	</select>
+	
+	<select id="userFunc" parameterType="map" resultMap="resultMap">
+      SELECT  F.ID,F.PARENT_ID,F.NAME,F.URL
+        FROM TBL_SYS_FUNC F 
+        WHERE F.ID IN
+          (SELECT RF.FUNC_ID 
+           FROM TBL_SYS_FUNC_ROLE RF JOIN TBL_SYS_USER_ROLE RU ON RF.ROLE_ID=RU.ROLE_ID 
+           WHERE RU.USER_ID= ${id})
+        ORDER BY F.ID ASC
+	</select>
+	<select id="rootFunc" parameterType="map" resultMap="resultMap">
+        SELECT F.ID, F.PARENT_ID, F.NAME, F.URL
+          FROM TBL_SYS_FUNC F
+         ORDER BY ID
+	</select>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

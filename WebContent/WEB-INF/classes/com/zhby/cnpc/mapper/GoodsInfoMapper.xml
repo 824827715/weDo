@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zhby.cnpc.mapper.GoodsInfoMapper">
+
+	<resultMap type="GoodsInfoObj" id="GoodsInfoMap">
+		<id property="id" column="id" />
+		<result property="categoryId" column="category_id" />
+		<result property="orgCode" column="org_code" />
+		<result property="categoryName" column="category_name" />
+		<result property="parentName" column="parent_name" />
+		<result property="name" column="name" />
+		<result property="summary" column="summary" />
+		<result property="content" column="content" />
+		<result property="price" column="price" />
+		<result property="salePrice" column="sale_price" />
+		<result property="status" column="status" />
+		<result property="creator" column="creator" />
+		<result property="createDate" column="create_date" />
+		<result property="modifier" column="modifier" />
+		<result property="updateDate" column="update_date" />
+		<result property="specName" column="spec_name" />
+		<result property="unitName" column="unit_name" />
+		<result property="dicSpec" column="spec" />
+		<result property="dicUnit" column="unit" />
+		<result property="isRecommend" column="is_recommend" />
+		<result property="isTop" column="is_top" />
+	</resultMap>	
+	
+	<sql id="table">
+		tbl_cnpc_goods
+	</sql>
+	
+	<sql id="conditions">
+		<where>
+			<if test="id!=null and id!= ''">
+				and a.id = #{id,jdbcType=NUMERIC}
+			</if>
+			<if test="orgCode!=null and orgCode!= ''">
+				and a.org_code = #{orgCode,jdbcType=VARCHAR}
+			</if>
+			<if test="categoryId!=null and categoryId!=''">
+				and a.category_id = #{categoryId,jdbcType=NUMERIC}
+			</if>
+			<if test="name!=null and name!= ''">
+				and a.name = #{name,jdbcType=VARCHAR}
+			</if>
+			<if test="status!=null and status!= ''">
+				and a.status = #{status,jdbcType=VARCHAR}
+			</if>
+		</where>
+	</sql>
+	
+	<sql id="orderby">
+		 order by id desc
+	</sql>
+	
+	
+	<!-- 查询所有商品信息及所属分类 -->
+	<select id="listPage" parameterType="GoodsInfoObj" resultMap="GoodsInfoMap">
+		select a.*,b.name as category_name,
+		(select name from tbl_cnpc_goods_category where id = b.parent_id) as parent_name,
+		get_code('DIC_GOODS_SPEC',a.spec) AS spec_name,
+		get_code('DIC_GOODS_UNIT',a.unit) AS unit_name
+		from <include refid="table"/> a
+		left join tbl_cnpc_goods_category b on a.category_id=b.id
+		<include refid="conditions"/> 
+		<include refid="orderby"/> 
+	</select>
+	
+	<select id="count" parameterType="GoodsInfoObj" resultType="int">
+		select count(*) 
+		from <include refid="table"/> a
+		<include refid="conditions"/>
+	</select>
+	
+	<!-- 增加商品信息 -->	
+	<insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="GoodsInfoObj">
+		insert into <include refid="table" /> (
+			category_id, org_code, name, summary, content, price, sale_price, spec,  
+			unit, creator, create_date, is_recommend, is_top,status
+		) values (
+			#{categoryId,jdbcType=NUMERIC}, 
+			#{orgCode,jdbcType=VARCHAR}, 
+			#{name,jdbcType=VARCHAR}, 
+			#{summary,jdbcType=VARCHAR}, 
+			#{content,jdbcType=VARCHAR}, 
+			#{price,jdbcType=NUMERIC},
+			#{salePrice,jdbcType=NUMERIC}, 
+			#{dicSpec,jdbcType=VARCHAR}, 
+			#{dicUnit,jdbcType=VARCHAR}, 
+			#{creator,jdbcType=VARCHAR},
+			now(),
+			#{isRecommend,jdbcType=VARCHAR},
+			#{isTop,jdbcType=VARCHAR},
+			#{status,jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<!-- 根据Id查询商品信息 -->
+	<select id="getById" parameterType="long" resultMap="GoodsInfoMap">
+		select a.*, b.name as category_name
+		from <include refid="table"/> a
+		left join tbl_cnpc_goods_category b on a.category_id = b.id
+		where a.id = #{id,jdbcType=NUMERIC}
+	</select>
+	<!-- 修改商品信息 -->
+	<update id="update" parameterType="GoodsInfoObj">
+		update <include refid="table" />
+		<set>
+			<if test="categoryId != null and categoryId != ''">category_id = #{categoryId,jdbcType=NUMERIC},</if>
+			<if test="name != null and name != ''">name = #{name,jdbcType=VARCHAR},</if>
+			<if test="summary != null and summary != ''">summary = #{summary,jdbcType=VARCHAR},</if>
+			content = #{content,jdbcType=VARCHAR},
+			<if test="orgCode != null and orgCode != ''">org_code = #{orgCode,jdbcType=VARCHAR},</if>
+			<if test="salePrice != null and salePrice != ''">sale_price = #{salePrice,jdbcType=NUMERIC},</if>
+			<if test="price != null and price != ''">price = #{price,jdbcType=NUMERIC},</if>
+			<if test="dicSpec != null and dicSpec != ''">spec = #{dicSpec,jdbcType=VARCHAR},</if>
+			<if test="dicUnit != null and dicUnit != ''">unit = #{dicUnit,jdbcType=VARCHAR},</if>
+			<if test="modifier != null and modifier != ''">modifier = #{modifier,jdbcType=VARCHAR},</if>
+			<if test="status != null and status != ''">status = #{status,jdbcType=VARCHAR},</if>
+			<if test="isRecommend != null and isRecommend != ''">is_recommend = #{isRecommend,jdbcType=VARCHAR},</if>
+			<if test="isTop != null and isTop != ''">is_Top = #{isTop,jdbcType=VARCHAR},</if>
+			update_date = now(),
+		</set>
+		where id = #{id,jdbcType=NUMERIC}
+	</update>
+	<!-- 删除商品 -->
+	<select id="ifremove" parameterType="Long" resultType="int">
+		select count(*) from tbl_cnpc_orders 
+		where 
+		goods_id=#{id,jdbcType=NUMERIC}
+	</select>
+	<delete id="remove" parameterType="Long">
+		delete from tbl_cnpc_goods 
+		where 
+		id=#{id,jdbcType=NUMERIC}
+	</delete>	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+

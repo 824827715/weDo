@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zhby.sysapp.mapper.FileMapper">
+
+	<resultMap type="FileObj" id="resultMap">
+		<id property="id" column="id" />
+		<result property="bizType" column="biz_type" />
+		<result property="bizId" column="biz_id" />
+		<result property="fileType" column="file_type" />
+		<result property="contentType" column="content_type" />
+		<result property="filePath" column="file_path" />
+		<result property="fileSize" column="file_size" />
+		<result property="fileName" column="file_name" />
+		<result property="fileOriginalName" column="file_original_name" />
+		<result property="creationDate" column="creation_date" />
+	</resultMap>
+	
+	<resultMap type="hashMap" id="queryResultMap">
+		<result property="fileType" column="file_type" />
+		<result property="filePath" column="file_path" />
+	</resultMap>	
+	
+	<sql id="table">
+		tbl_sys_file
+	</sql>
+	
+	<sql id="orderby">
+		order by id asc
+	</sql>
+	
+	<sql id="conditions">
+		<where>
+			<if test="id != null">
+				and id = #{id,jdbcType=NUMERIC}
+			</if>
+			<if test="bizId != null">
+				and biz_id = #{bizId,jdbcType=NUMERIC}
+			</if>
+			<if test="bizType != null and bizType != ''">
+				and biz_type = #{bizType,jdbcType=VARCHAR}
+			</if>
+			<if test="fileType != null and fileType != ''">
+				and file_type = #{fileType,jdbcType=VARCHAR}
+			</if>
+		</where>
+	</sql>
+	
+	<insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="FileObj">
+		insert into <include refid="table" /> (
+			biz_id, biz_type, file_type, content_type, file_path, file_size, file_name, file_original_name
+		) values (
+			#{bizId,jdbcType=NUMERIC},
+			#{bizType,jdbcType=VARCHAR}, 
+			#{fileType,jdbcType=VARCHAR}, 
+			#{contentType,jdbcType=VARCHAR}, 
+			#{filePath,jdbcType=VARCHAR}, 
+			#{fileSize,jdbcType=NUMERIC}, 
+			#{fileName,jdbcType=VARCHAR}, 
+			#{fileOriginalName,jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<insert id="bind" parameterType="hashmap">
+		insert into tbl_sys_file (
+			biz_type,biz_id,file_type,content_type,file_path,file_size,file_name,file_original_name
+		)  select #{bizType,jdbcType=VARCHAR},#{bizId,jdbcType=NUMERIC},#{fileType,jdbcType=VARCHAR},content_type,file_path,file_size,file_name,file_original_name 
+				from tbl_sys_file 
+					where id = #{fileId,jdbcType=NUMERIC}
+	</insert>
+	
+	<select id="count" parameterType="FileObj" resultType="int">
+		select count(*) from 
+		<include refid="table"/>
+		<include refid="conditions" />
+	</select>
+	
+	<select id="list" parameterType="FileObj" resultMap="resultMap">
+		select * 
+		from <include refid="table" />
+		<include refid="conditions" />
+		<include refid="orderby" />
+	</select>
+	
+	<select id="listPage" parameterType="FileObj" resultMap="resultMap">
+		select * 
+		from <include refid="table" />
+		<include refid="conditions" />
+		<include refid="orderby" />
+	</select>
+	
+	<update id="update" parameterType="FileObj">
+		update <include refid="table" /> set biz_id = #{bizId,jdbcType=NUMERIC} where id = #{id,jdbcType=NUMERIC}
+	</update>
+	
+	<delete id="deleteById" parameterType="long">
+		delete from <include refid="table" /> where id = #{id,jdbcType=NUMERIC}
+	</delete>
+	
+	<delete id="deleteByBizId" parameterType="long">
+		delete from <include refid="table" /> where biz_id = #{bizId,jdbcType=NUMERIC}
+	</delete>
+	
+	<delete id="unBindBiz" parameterType="map">
+		delete from <include refid="table" /> 
+		where biz_id=#{bizId,jdbcType=NUMERIC} and id not in 
+		<foreach item="item" index="index" collection="ids" open="(" separator="," close=")"> 
+			#{item}
+		</foreach>
+	</delete>
+	<update id="bindBiz" parameterType="map">
+		update <include refid="table" /> set biz_id=#{bizId,jdbcType=NUMERIC} 
+		where id in
+		<foreach item="item" index="index" collection="ids" open="(" separator="," close=")"> 
+			#{item}
+		</foreach>
+	</update>
+	
+	<select id="getFiles" parameterType="hashmap" resultMap="queryResultMap">
+		select 
+			file_type,concat(#{_base_path},file_path,'/',file_name) as file_path
+		from <include refid="table" />
+		<include refid="conditions" />
+		<include refid="orderby" />
+	</select>	
+
+</mapper>
+

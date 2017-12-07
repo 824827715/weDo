@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zhby.cnpc.mapper.QueryReportMapper">
+	
+	<!-- 查询加油枪使用情况 -->
+	<select id="list" parameterType="hashmap" resultType="hashmap">
+		select 
+			get_code('OIL_GUN_CODE',a.machine) as machine,b.name,b.ext1,b.ext2,
+			b.name,b.ext1,b.ext2,
+			count(*) as total_count,
+			sum(money) as total_money,
+			sum(quantity) as total_quantity
+		from tbl_cnpc_dit a left join tbl_sys_dictionary b on a.machine=b.value
+		<where>
+			<if test="orgCode!=null and orgCode!=''">
+				and a.org_code=#{orgCode,jdbcType=VARCHAR}
+			</if>
+			<choose>
+		        <when test="chooseTime=='w'.toString()">
+		            and YEARWEEK(date_format(a.record_date,'%Y-%m-%d')) = YEARWEEK(now()) 
+		        </when>
+		        <when test="chooseTime=='d'.toString()">
+		            and  record_date = date_format(now(),'%Y-%m-%d') 
+		        </when>
+		        <otherwise>
+		        	and date_format(a.record_date, '%Y%m') = date_format(CURDATE(),'%Y%m') 
+		         
+		        </otherwise>
+	    	</choose>
+    	</where>
+    	group by a.machine,b.name,b.ext1,b.ext2
+    	order by total_count desc
+	</select>
+	
+	
+	
+	
+	<!-- 。。。。。。。并不华丽的分割线。。。。。。接口。。。。。。。 -->
+	
+	<!-- 查询当日 本周  当月入场车辆 -->
+	<select id="countByTime" parameterType="hashmap" resultType="Long">
+		select COUNT(*) from tbl_cnpc_vehicle_record 
+		<where>
+			<if test="orgCode!=null and orgCode!=''">
+				and org_code=#{orgCode,jdbcType=VARCHAR}
+			</if>
+			<choose>
+		        <when test="chooseTime=='w'.toString()">
+		            and YEARWEEK(date_format(in_time,'%Y-%m-%d')) = YEARWEEK(now())
+		        </when>
+		        <when test="chooseTime=='m'.toString()">
+		            and date_format(in_time, '%Y%m') = date_format(CURDATE(),'%Y%m')
+		        </when>
+		        <otherwise>
+		            and  record_date = date_format(now(),'%Y-%m-%d')
+		        </otherwise>
+	    	</choose>
+    	</where>
+	</select>
+
+	<!-- 查询当日订单数以两小时分组数据 -->
+	<select id="groupByTime" parameterType="hashmap" resultType="hashmap">
+		select count(*) as total_order,
+			(
+			case 
+			when TIMESTAMPDIFF(SECOND,concat(date_format(now(),'%Y-%m-%d'),' 00:00:00'),biz_date) BETWEEN 0 and 7200 then '0~2' 
+			when TIMESTAMPDIFF(SECOND,concat(date_format(now(),'%Y-%m-%d'),' 00:00:00'),biz_date) BETWEEN (7200*1+1) and (7200*2) then '2~4' 
+			when TIMESTAMPDIFF(SECOND,concat(date_format(now(),'%Y-%m-%d'),' 00:00:00'),biz_date) BETWEEN (7200*2+1) and (7200*3) then '4~6' 
+			when TIMESTAMPDIFF(SECOND,concat(date_format(now(),'%Y-%m-%d'),' 00:00:00'),biz_date) BETWEEN (7200*3+1) and (7200*4) then '6~8'
+			when TIMESTAMPDIFF(SECOND,concat(date_format(now(),'%Y-%m-%d'),' 00:00:00'),biz_date) BETWEEN (7200*4+1) and (7200*5) then '8~10'
+			when TIMESTAMPDIFF(SECOND,concat(date_format(now(),'%Y-%m-%d'),' 00:00:00'),biz_date) BETWEEN (7200*5+1) and (7200*6) then '10~12'
+			when TIMESTAMPDIFF(SECOND,concat(date_format(now(),'%Y-%m-%d'),' 00:00:00'),biz_date) BETWEEN (7200*6+1) and (7200*7) then '12~14'
+			when TIMESTAMPDIFF(SECOND,concat(date_format(now(),'%Y-%m-%d'),' 00:00:00'),biz_date) BETWEEN (7200*7+1) and (7200*8) then '14~16'
+			when TIMESTAMPDIFF(SECOND,concat(date_format(now(),'%Y-%m-%d'),' 00:00:00'),biz_date) BETWEEN (7200*8+1) and (7200*9) then '16~18'
+			when TIMESTAMPDIFF(SECOND,concat(date_format(now(),'%Y-%m-%d'),' 00:00:00'),biz_date) BETWEEN (7200*9+1) and (7200*10) then '18~20'
+			when TIMESTAMPDIFF(SECOND,concat(date_format(now(),'%Y-%m-%d'),' 00:00:00'),biz_date) BETWEEN (7200*10+1) and (7200*11) then '20~22'
+			when TIMESTAMPDIFF(SECOND,concat(date_format(now(),'%Y-%m-%d'),' 00:00:00'),biz_date) BETWEEN (7200*11+1) and (7200*12) then '22~24'
+			else '-' end
+			) as time_area
+		from tbl_cnpc_dit where record_date = date_format(now(),'%Y-%m-%d') group by time_area
+		order by biz_date asc
+	</select>
+	
+	<!-- 查询当日客流量与加油量 -->
+	<select id="queryNowadayCustAndOil" resultType="hashmap">
+		select 
+			count(*) as custNum,sum(quantity) as oilNum
+		from 
+			tbl_cnpc_dit 
+		where 
+			record_date = date_format(now(),'%Y-%m-%d')
+	</select>
+	<!-- 查询油品消耗量根据类型分组 -->
+	<select id="queryOil" parameterType="hashmap" resultType="hashmap">
+		select SUM(quantity) as y,
+		(case 
+		when c.oil_type='3' then '92#' 
+		when c.oil_type='4' then '95#' 
+		when c.oil_type='2' then '98#' 
+		else '-' end) as name 
+		from tbl_cnpc_dit c 
+		where record_date = date_format(now(),'%Y-%m-%d')
+		GROUP BY oil_type
+	</select>
+	
+	<!-- 客户综合统计 -->
+	<select id="queryCustReport" parameterType="hashmap" resultType="hashmap">
+		select 
+		a.hphm,
+		(case when a.hpzl='01' then '大型车' when a.hpzl='02' then '小型车' else '-' end) as hpzl,
+		a.clpp1,a.syr,a.sjhm,a.sfzmhm,
+		count(*) as oilCount,
+		sum(c.money) as sumMoney,
+		sum(c.quantity) as sumQuantity,
+		(case when c.oil_type='3' then '92#' when c.oil_type='4' then '95#' when c.oil_type='2' then '98#' else '-' end) as oilType
+		from tbl_vio_vehicle a inner join tbl_cnpc_dit_vehicle b on a.id=b.vehicle_id
+		inner join tbl_cnpc_dit c on b.dit_id=c.id
+		where a.data_type='1' and length(a.sfzmhm) in (15,18)
+		group by a.hphm,a.hpzl,a.clpp1,a.syr,a.sjhm,a.sfzmhm,c.oil_type
+		order by oilCount desc
+	</select>
+	
+	<select id="queryCustReportCount" parameterType="hashmap" resultType="int">
+		select 
+		count(*)
+		from tbl_vio_vehicle a inner join tbl_cnpc_dit_vehicle b on a.id=b.vehicle_id
+		inner join tbl_cnpc_dit c on b.dit_id=c.id
+		where a.data_type='1' and length(a.sfzmhm) in (15,18)
+	</select>
+</mapper>
+
+
+
+
+

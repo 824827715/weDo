@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zhby.cnpc.mapper.OperatorMapper">
+
+	<resultMap type="OperatorObj" id="resultMap">
+		<id property="id" column="id" />
+		<result property="code" column="code" />
+		<result property="orgCode" column="org_code" />
+		<result property="password" column="password" />
+		<result property="name" column="name" />
+		<result property="status" column="status" />
+		<result property="loginTime" column="login_time" />
+		<result property="logoutTime" column="logout_time" />
+	</resultMap>
+	
+	<sql id="table">
+		tbl_cnpc_operator
+	</sql>
+	
+	<sql id="columns">
+		 code, org_code, password, name, status, login_time, logout_time
+	</sql>
+	
+	<sql id="conditions">
+		<where>
+			<if test="orgCode != null and orgCode != ''">
+				and org_code = #{orgCode,jdbcType=VARCHAR}
+			</if>
+			<if test="code != null and code != ''">
+				and code = #{code,jdbcType=VARCHAR}
+			</if>
+		</where>
+	</sql>
+	
+	
+	<!-- 查询所有操作员信息 -->
+	<select id="list" parameterType="OperatorObj" resultMap="resultMap">
+		select <include refid="columns"></include> 
+		from <include refid="table"></include>
+		<include refid="conditions"></include>
+	</select>
+	
+	
+	<!-- 添加加油员 -->
+	<select id="check" parameterType="OperatorObj" resultType="int">
+		select count(*) from <include refid="table"></include>
+		where code=#{code,jdbcType=VARCHAR}
+	</select>
+	<insert id="insert" useGeneratedKeys="true" keyProperty="code" parameterType="OperatorObj" >
+		insert into <include refid="table"></include>(
+		code, org_code, name, password, status
+		)value(
+		#{code,jdbcType=NUMERIC},
+		#{orgCode,jdbcType=NUMERIC},
+		#{name,jdbcType=VARCHAR},
+		#{password,jdbcType=VARCHAR},
+		#{status,jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	
+	<!-- 根绝code查询加油员 -->
+	<select id="edit" parameterType="String" resultMap="resultMap">
+		select code, 
+		org_code,
+		name, status
+		from <include refid="table"></include>
+		where code = #{code,jdbcType=VARCHAR}
+	</select>
+	
+	
+	
+	<!-- 后台修改操作员信息 -->
+	<update id="change" parameterType="OperatorObj" >
+		update <include refid="table"></include>
+		<set> 
+		<if test="orgCode != null and orgCode != ''">
+			org_code = #{dicOrgCode,jdbcType=VARCHAR}, 
+		</if>
+		<if test="name != null and name != ''">
+			name = #{name,jdbcType=VARCHAR}, 
+		</if>
+		<if test="status != null and status != ''">
+			status = #{status,jdbcType=VARCHAR},
+		</if>
+		<if test="password != null and password != ''">
+			password = #{password,jdbcType=VARCHAR},
+		</if>
+		</set> 
+		where code= #{code,jdbcType=VARCHAR}
+	</update>
+	<!-- 启用停用 -->
+	<update id="changeStatus" parameterType="OperatorObj" >
+		update <include refid="table"></include>	
+		set 
+		status = #{status,jdbcType=VARCHAR}
+		where code= #{code,jdbcType=VARCHAR}
+	</update>
+	
+	<!-- 接口  -->
+	<select id="getByCode" parameterType="hashmap" resultMap="resultMap">
+		select code, org_code, password, name, status
+		from tbl_cnpc_operator 
+		where code = #{code,jdbcType=VARCHAR} and org_code=#{orgCode,jdbcType=VARCHAR}
+	</select>
+	
+	<update id="update" parameterType="hashmap">
+		update tbl_cnpc_operator set login_time=now() where code = #{code,jdbcType=VARCHAR} and org_code=#{orgCode,jdbcType=VARCHAR}
+	</update>
+</mapper>
+
+
+
+
+
+

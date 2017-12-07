@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-config.dtd">
+ 
+<configuration>
+	
+	<!-- 方言配置 -->
+	<properties>
+		<property name="dialect" value="mysql"/>
+	</properties>
+	
+	<settings>
+		<setting name="callSettersOnNulls" value="true"/>
+	</settings>
+	
+	<!-- 别名配置 -->
+	<typeAliases>
+		<!-- 系统功能配置 -->
+		<typeAlias type="com.zhby.sysapp.data.SysUserObj" alias="SysUserObj" />
+		<typeAlias type="com.zhby.sysapp.data.SysOrgObj" alias="SysOrgObj" />
+		<typeAlias type="com.zhby.sysapp.data.SysRoleObj" alias="SysRoleObj" />
+		<typeAlias type="com.zhby.sysapp.data.SysFuncObj" alias="SysFuncObj" />
+		<typeAlias type="com.zhby.sysapp.data.SysDictionaryCategoryObj" alias="SysDictionaryCategoryObj" />
+		<typeAlias type="com.zhby.sysapp.data.SysDictionaryObj" alias="SysDictionaryObj" />
+		<typeAlias type="com.zhby.sysapp.data.SysUserRoleObj" alias="SysUserRoleObj" />
+		<typeAlias type="com.zhby.sysapp.data.SysFuncRoleObj" alias="SysFuncRoleObj" />
+		<typeAlias type="com.zhby.sysapp.data.SysLogObj" alias="SysLogObj" />
+		<typeAlias type="com.zhby.sysapp.data.FileObj" alias="FileObj" />
+		<typeAlias type="com.zhby.sysapp.data.ProvinceObj" alias="ProvinceObj"/>
+		<!-- 商品信息配置 -->
+		<typeAlias type="com.zhby.cnpc.data.GoodsCategoryObj" alias="GoodsCategoryObj" />
+		<typeAlias type="com.zhby.cnpc.data.GoodsInfoObj" alias="GoodsInfoObj" />
+		<!-- 操作员 -->
+		<typeAlias type="com.zhby.cnpc.data.OperatorObj" alias="OperatorObj" />
+		<typeAlias type="com.zhby.cnpc.data.QueryLPRObj" alias="QueryLPRObj" />	
+		<typeAlias type="com.zhby.cnpc.data.QueryDITObj" alias="QueryDITObj" />	
+	</typeAliases>
+	
+	<!-- 插件配置 -->
+	<plugins>
+		<plugin interceptor="com.zhby.core.mybatis.interceptor.PaginationInterceptor"/>
+	</plugins>
+	
+	<!-- 映射配置 -->
+	<mappers>
+		<!-- 系统功能配置 -->
+		<mapper resource="com/zhby/sysapp/mapper/SysUserMapper.xml"/>
+		<mapper resource="com/zhby/sysapp/mapper/SysOrgMapper.xml"/>
+		<mapper resource="com/zhby/sysapp/mapper/SysRoleMapper.xml"/>
+		<mapper resource="com/zhby/sysapp/mapper/SysFuncMapper.xml"/>
+		<mapper resource="com/zhby/sysapp/mapper/SysDictionaryCategoryMapper.xml"/>
+		<mapper resource="com/zhby/sysapp/mapper/SysDictionaryMapper.xml"/>
+		<mapper resource="com/zhby/sysapp/mapper/SysUserRoleMapper.xml"/>
+		<mapper resource="com/zhby/sysapp/mapper/SysFuncRoleMapper.xml"/>
+		<mapper resource="com/zhby/sysapp/mapper/SysLogMapper.xml"/>
+		<mapper resource="com/zhby/sysapp/mapper/FileMapper.xml"/>
+		<mapper resource="com/zhby/sysapp/mapper/CityMapper.xml"/>
+		<!-- 商品信息配置 -->
+		<mapper resource="com/zhby/cnpc/mapper/GoodsCategoryMapper.xml"></mapper>
+		<mapper resource="com/zhby/cnpc/mapper/GoodsInfoMapper.xml"></mapper>
+		<!-- 操作员 -->
+		<mapper resource="com/zhby/cnpc/mapper/OperatorMapper.xml"></mapper>
+		<!-- 数据交换 -->
+		<mapper resource="com/zhby/cnpc/mapper/ExchangeMapper.xml"></mapper>
+		<mapper resource="com/zhby/cnpc/mapper/POSMapper.xml"></mapper>
+		<!-- 获取制表数据 -->
+		<mapper resource="com/zhby/cnpc/mapper/QueryReportMapper.xml"></mapper>
+		<mapper resource="com/zhby/cnpc/mapper/MonitorMapper.xml"></mapper>
+	</mappers>
+	
+</configuration>

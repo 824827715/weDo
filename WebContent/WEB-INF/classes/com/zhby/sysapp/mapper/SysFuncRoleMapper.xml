@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zhby.sysapp.mapper.SysFuncRoleMapper">
+
+
+	<insert id="insertRoleFunc" parameterType="SysFuncRoleObj">
+		 insert into tbl_sys_func_role (role_id,func_id) values(#{roleId,jdbcType=NUMERIC},#{funcId,jdbcType=NUMERIC})
+	</insert>
+	
+	<delete id="deleteByRoleId" parameterType="java.lang.Long">
+		delete from tbl_sys_func_role where role_id = #{roleId,jdbcType=NUMERIC}
+	</delete>
+</mapper>

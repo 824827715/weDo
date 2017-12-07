@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zhby.sysapp.mapper.VersionMapper">
+
+	<resultMap type="hashmap" id="resultMap">
+		<result property="version" column="version"/>
+		<result property="remark" column="remark"/>
+		<result property="date" column="update_date"/>
+	</resultMap>
+	
+	<sql id="table">
+		tbl_client_version
+	</sql>
+
+	<select id="getVersion" parameterType="hashmap" resultMap="resultMap">
+		select * from <include refid="table" />
+		where code = #{code,jdbcType=NUMERIC}
+	</select>
+</mapper>
