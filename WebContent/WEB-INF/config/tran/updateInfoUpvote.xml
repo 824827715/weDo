@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<transaction>
+	<action>updateInfoUpvote</action>
+	<status>1</status>
+	<data-type>01</data-type>
+	<login-required>false</login-required>
+	<module>jcms</module>
+	<desc>信息点赞</desc>
+	<params>
+		<param>
+			<name>id</name>
+			<type>number</type>
+			<required>true</required>
+			<desc></desc>
+		</param>
+		<param>
+			<name>upvote</name>
+			<type>number</type>
+			<required>true</required>
+			<desc>点赞数</desc>
+		</param>
+	</params>
+	<steps>
+		<step id="step1" class="com.zhby.jservice.steps.db.UpdateStep">
+			<resource>cms.updateInfoUpvote</resource>
+		</step>
+	</steps>
+</transaction>

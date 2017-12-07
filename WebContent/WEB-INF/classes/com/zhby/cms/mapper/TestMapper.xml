@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="test">
+
+	<resultMap type="CMSCategory" id="categoryResultMap">
+		<id property="id" column="id" />
+		<result property="parentId" column="parent_id" />
+		<result property="name" column="name" />
+		<result property="code" column="code" />
+		<result property="summary" column="summary" />
+	</resultMap>
+	
+	<resultMap type="CMSInfo" id="infoResultMap">
+		<id property="id" column="id" />
+		<result property="categoryName" column="category_name" />
+		<result property="title" column="title" />
+		<result property="summary" column="summary" />
+		<result property="content" jdbcType="CLOB" javaType = "java.lang.String" column="content" />
+		<result property="viewType" column="view_type" />
+		<result property="link" column="link" />
+		<result property="videoUrl" column="video_url" />
+		<result property="videoPeriod" column="video_period" />
+		<result property="viewType" column="view_type" />
+		<result property="source" column="source" />
+		<result property="hits" column="hits" />
+		<result property="isTop" column="is_top" />
+		<result property="creationDate" column="creation_date" />
+		<collection property="files" ofType="CMSFile" javaType="ArrayList"  column="id" select="selectFiles"/>
+	</resultMap>
+	
+	<resultMap type="CMSFile" id="fileResultMap">
+		<id property="id" column="id" />
+		<result property="bizType" column="biz_type" javaType="String" />
+		<result property="fileUrl" column="file_url" javaType="String" />
+		<result property="contentType" column="content_type" javaType="String"/>
+	</resultMap>		
+	
+	<sql id="category-columns">
+		 id,parent_id,name,code,summary
+	</sql>
+
+	<sql id="info-columns">
+		a.id, a.category_name, a.title, a.summary, a.view_type, a.url, a.hits, a.is_top, a.creator, a.creation_date
+	</sql>	
+
+	<select id="checkCategory" parameterType="hashmap" resultType="int">
+		select count(*) from tbl_cms_category
+		<where>
+			<if test="code != null and code != ''">
+				and code = #{code,jdbcType=VARCHAR}
+			</if>
+		</where>		
+	</select>
+	
+	<!-- 查询栏目信息 -->
+	<select id="getCategoryByCode" parameterType="hashmap" resultMap="categoryResultMap">
+		select <include refid="category-columns" /> 
+		from tbl_cms_category
+		<where>
+			<if test="code != null and code != ''">
+				and code = #{code,jdbcType=VARCHAR}
+			</if>
+		</where>
+	</select>
+	<!-- 子栏目查询 -->
+	<select id="querySubCategoryByCode" parameterType="hashmap" resultMap="categoryResultMap">
+		select <include refid="category-columns" /> 
+		from tbl_cms_category 
+		where parent_id=(
+			select id 
+			from tbl_cms_category 
+			where code=#{code,jdbcType=VARCHAR}
+		)
+	</select>
+	
+	<!-- 信息查询 -->
+	<select id="getInfoById" parameterType="hashmap" resultMap="infoResultMap">
+		select 
+			a.id, a.title, a.summary, a.link, a.video_url, a.video_period,a.view_type, a.source, a.hits, a.is_top, a.content, a.creation_date,
+			b.name as category_name
+		from 
+			tbl_cms_info a inner join tbl_cms_category b on a.category_id = b.id
+		where 
+			a.status='1' and a.id = #{id,jdbcType=NUMERIC}
+	</select>
+	<!-- 资源信息查询 -->
+	<select id="selectFiles" parameterType="int" resultMap="fileResultMap">
+		select 
+			id,biz_type,content_type,('http://test.jiaotongms.com/jcms'||file_path||'/'||file_name) as file_url 
+		from tbl_cms_file 
+		where info_id = #{infoId,jdbcType=NUMERIC}
+	</select>
+	
+	
+	<select id="queryInfoListByCode-count" parameterType="map" resultType="int">
+		select 
+			count(1)
+		from 
+			tbl_cms_info a inner join tbl_cms_category b on a.category_id = b.id
+		where 
+			a.status='1' and b.code = #{code,jdbcType=VARCHAR}
+	</select>
+	
+	<select id="queryInfoListByCode" parameterType="map" resultMap="infoResultMap">
+		select 
+			a.id, a.title, a.summary, a.view_type, a.source, a.link, a.video_url, a.video_period, a.hits, a.is_top, a.creation_date,b.name as category_name
+		from 
+			tbl_cms_info a inner join tbl_cms_category b on a.category_id = b.id
+		where
+			a.status='1' and b.code = #{code,jdbcType=VARCHAR}
+	</select>	
+	
+</mapper>
+		

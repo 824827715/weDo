@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<transaction>
+	<action>queryCloseServiceItem</action>
+	<status>1</status>
+	<data-type>01</data-type>
+	<login-required>false</login-required>
+	<module>mapservice</module>
+	<desc>根据经纬度查询1公里范围内的网点</desc>
+	<params>
+		<param>
+			<name>longitude</name>
+			<type>string</type>
+			<required>true</required>
+			<desc>经度</desc>
+		</param>
+		<param>
+			<name>latitude</name>
+			<type>string</type>
+			<required>true</required>
+			<desc>纬度</desc>
+		</param>
+		<param>
+			<name>itemType</name>
+			<type>string</type>
+			<required>false</required>
+			<desc>服务类型编码</desc>
+		</param>
+		<param>
+			<name>branchTypeCode</name>
+			<type>string</type>
+			<required>false</required>
+			<desc>网点类型编码</desc>
+		</param>
+	</params>
+	<steps>
+		<step id="step1" class="com.zhby.mapservice.step.queryCloseServiceItem"/>
+	</steps>
+</transaction>

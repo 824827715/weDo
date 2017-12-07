@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<transaction>
+	<action>insertFeedbackInfo</action>
+	<status>1</status>
+	<data-type>01</data-type>
+	<module>jcms</module>
+	<desc>上传反馈信息</desc>
+	<params>
+		<param>
+			<name>phone</name>
+			<type>String</type>
+			<required>true</required>
+			<desc>客户手机号</desc>
+		</param>
+		<param>
+			<name>custName</name>
+			<type>String</type>
+			<required>false</required>
+			<desc>客户姓名</desc>
+		</param>
+		<param>
+			<name>content</name>
+			<type>String</type>
+			<required>true</required>
+			<desc>反馈内容</desc>
+		</param>
+		<param>
+			<name>categoryId</name>
+			<type>string</type>
+			<required>false</required>
+			<desc>问题类型对应Id</desc>
+		</param>
+		<param>
+			<name>loginId</name>
+			<type>number</type>
+			<required>true</required>
+			<desc>登录ID</desc>
+		</param>
+		<param>
+			<name>deviceId</name>
+			<type>string</type>
+			<required>true</required>
+			<desc>设备ID</desc>
+		</param>
+	</params>
+	<steps>
+		<step id="step1" class="com.zhby.cms.step.InsertFeedbackInfoStep">
+			<resource>com.zhby.cms.mapper.FeedbackMapper.insertmain</resource>
+			<ext1>com.zhby.cms.mapper.FeedbackMapper.insertdetails</ext1>
+		</step>
+	</steps>
+</transaction>

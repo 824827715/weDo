@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zhby.cms.mapper.CategoryMapper">
+
+	<resultMap type="CategoryObj" id="resultMap">
+		<id property="id" column="id" />
+		<result property="parentId" column="parent_id" />
+		<result property="name" column="name" />
+		<result property="code" column="code" />
+		<result property="summary" column="summary" />
+		<result property="childs" column="childs" />
+	</resultMap>
+	
+	<sql id="table">
+		tbl_cms_category
+	</sql>
+	
+	<sql id="columns">
+		 id, parent_id, name, code, summary
+	</sql>
+	
+	<sql id="conditions">
+		<where>
+			<if test="id!=null">
+				and id = #{id,jdbcType=NUMERIC}
+			</if>
+			<if test="parentId!=null">
+				and parent_id = #{parentId,jdbcType=NUMERIC}
+			</if>
+			<if test="code != null and code != ''">
+				and code = #{code,jdbcType=VARCHAR}
+			</if>
+		</where>
+	</sql>	
+	
+	<select id="query" parameterType="map" resultMap="resultMap">
+		select <include refid="columns"/> 
+		from <include refid="table"/> 
+		<include refid="conditions"/>
+	</select>
+	
+	<select id="list" parameterType="CategoryObj" resultMap="resultMap">
+		select 
+			t.id,t.name,t.parent_id,t.code,t.summary,(select count(*) from <include refid="table"/> where parent_id = t.id) as childs
+		from <include refid="table"/> t
+		where t.parent_id = #{parentId,jdbcType=NUMERIC}
+	</select>	
+	
+	<select id="checkCode" parameterType="string" resultType="int">
+		select count(*) from 
+		<include refid="table"/>
+		where code = #{code}
+	</select>
+	
+	<select id="edit" parameterType="CategoryObj" resultMap="resultMap">
+		select <include refid="columns"/>  
+		from <include refid="table"/> 
+		<include refid="conditions"/> 
+	</select>
+
+	<insert id="insert" parameterType="CategoryObj" keyProperty="id" useGeneratedKeys="true">
+		insert into <include refid="table" /> 
+		(
+			parent_id, parent_code,name, code, summary
+		) values (
+			#{parentId,jdbcType=NUMERIC}, 
+			#{parentCode,jdbcType=VARCHAR}, 
+			#{name,jdbcType=NUMERIC},
+			#{code,jdbcType=VARCHAR}, 
+			#{summary,jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<!-- 根据ID获取栏目编码 -->
+	<select id="getParentCode" parameterType="java.lang.Long" resultType="java.lang.String">
+		SELECT code FROM
+		tbl_cms_category
+		WHERE id = #{id,jdbcType=NUMERIC}
+	</select>
+
+	<update id="update" parameterType="CategoryObj">
+		update <include refid="table" />
+		<set>
+			<if test="parentId != null">parent_id = #{parentId,jdbcType=NUMERIC},</if>
+			<if test="parentCode != null">parent_code = #{parentCode,jdbcType=VARCHAR},</if>
+			<if test="name != null and name != ''">name = #{name,jdbcType=VARCHAR},</if>
+			<if test="summary != null and summary != ''">summary = #{summary,jdbcType=VARCHAR},</if>
+		</set>
+		where id = #{id,jdbcType=NUMERIC}
+	</update>
+
+	<delete id="delete" parameterType="CategoryObj">
+		delete from <include refid="table" /> 
+		<include refid="conditions"/> 
+	</delete>
+	
+	<!-- 获取栏目ID -->
+	<select id="queryParentCodeByCode" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT parent_code
+		FROM tbl_cms_category
+		WHERE code = #{code,jdbcType=VARCHAR}
+	</select>
+	<!-- 获取子栏目ID -->
+	<select id="queryChildCategoryByParentId" parameterType="java.lang.String" resultType="hashmap">
+		SELECT id,name
+		FROM tbl_cms_category
+		WHERE parent_id = #{parentId,jdbcType=VARCHAR}
+	</select>
+</mapper>
+
+
+
+
+
+
+
+

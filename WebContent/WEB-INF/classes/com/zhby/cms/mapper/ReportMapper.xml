@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhby.cms.mapper.ReportMapper">
+	<resultMap type="hashmap" id="reportMap">
+		<id property="id" column="id"/>
+		<result property="categoryName" column="category_name"/>
+		<result property="title" column="title"/>
+		<result property="summary" column="summary"/>
+		<result property="longitude" column="longitude"/>
+		<result property="latitude" column="latitude"/>
+		<result property="address" column="address"/>
+		<result property="val" column="val"/>
+		<result property="timeDescription" column="time_description"/>
+		<result property="updateTime" column="update_time"/>
+	</resultMap>
+	<sql id="table">
+		tbl_cms_report
+	</sql>
+	
+	<select id="listPage" parameterType="hashmap" resultMap="reportMap">
+		select 
+			a.*,CONCAT((select name from tbl_cms_category where code = b.parent_code),'->',b.name) as category_name
+		from <include refid="table"/> a
+		left join tbl_cms_category b on a.category_id = b.id
+		order by a.update_time desc
+	</select>
+	
+	<select id="count" parameterType="hashmap" resultType="java.lang.Integer">
+		select count(*) from <include refid="table"/>
+	</select>
+	
+	<insert id="insert" parameterType="hashmap">
+		insert into <include refid="table"/> (
+			category_id,
+			title,
+			summary,
+			longitude,
+			latitude,
+			address,
+			val,
+			time_description,
+			update_time
+		) values (
+			#{categoryId,jdbcType=NUMERIC},
+			#{title,jdbcType=VARCHAR},
+			#{summary,jdbcType=VARCHAR},
+			#{longitude,jdbcType=VARCHAR},
+			#{latitude,jdbcType=VARCHAR},
+			#{address,jdbcType=VARCHAR},
+			#{val,jdbcType=NUMERIC},
+			#{timeDescription,jdbcType=VARCHAR},
+			now()
+		)
+	</insert>
+	<select id="getById" parameterType="long" resultType="hashmap">
+		select
+			a.id,a.category_id as categoryId,a.title,a.summary,a.longitude,a.latitude,a.address
+			,a.val,a.time_description as timeDescription
+			,b.name as categoryName 
+		from <include refid="table"/> a
+		left join tbl_cms_category b on a.category_id = b.id
+		where a.id=#{id,jdbcType=NUMERIC}
+	</select>
+	<update id="update" parameterType="hashmap">
+		update <include refid="table"/> set
+			category_id=#{categoryId,jdbcType=NUMERIC},
+			title=#{title,jdbcType=VARCHAR},
+			summary=#{summary,jdbcType=VARCHAR},
+			longitude=#{longitude,jdbcType=VARCHAR},
+			latitude=#{latitude,jdbcType=VARCHAR},
+			address=#{address,jdbcType=VARCHAR},
+			val=#{val,jdbcType=NUMERIC},
+			time_description=#{timeDescription,jdbcType=VARCHAR},
+			update_time=now()
+		where
+			id=#{id,jdbcType=NUMERIC}
+	</update>
+	<delete id="deleteById" parameterType="long">
+		delete from <include refid="table"/>
+		where
+			id=#{id,jdbcType=NUMERIC}
+	</delete>
+	
+	
+	
+	
+	
+	<!--查询违章报表-->
+	<select id="queryReport" parameterType="String" resultType="hashmap">
+		select 
+			a.id,
+			a.title,
+			a.summary,
+			a.longitude,
+			a.latitude,
+			a.address,
+			a.val,
+			a.time_description as timeDescription,
+			a.update_time as updateTime
+		from <include refid="table"/> a 
+		left join tbl_cms_category b on a.category_id = b.id
+		where b.code=#{code,jdbcType=VARCHAR}
+	</select>
+</mapper>

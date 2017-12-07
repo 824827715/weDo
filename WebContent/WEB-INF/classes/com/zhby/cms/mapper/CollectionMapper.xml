@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhby.cms.mapper.CollectionMapper">
+	<!-- 检查收藏状态 -->
+	<select id="checkCollectionStatus" parameterType="hashmap" resultType="String">
+		SELECT status 
+		FROM tbl_cms_collection 
+		WHERE 
+		cust_id=#{loginId,jdbcType=NUMERIC} 
+		AND biz_type=#{bizType,jdbcType=VARCHAR} 
+		AND biz_id=#{bizId,jdbcType=NUMERIC}
+	</select>
+
+
+
+	<!-- 检查之前收藏记录 -->
+	<select id="collectionCount" parameterType="hashmap" resultType="java.lang.Integer">
+		SELECT
+			COUNT(*)
+		FROM tbl_cms_collection
+		WHERE cust_id = #{loginId,jdbcType=NUMERIC}
+		AND biz_type = #{bizType,jdbcType=VARCHAR}
+		AND biz_id = #{bizId,jdbcType=NUMERIC}
+	</select>
+	
+	<insert id="insertCollection" parameterType="hashmap">
+		INSERT INTO tbl_cms_collection
+		(
+			cust_id,
+			biz_type,
+			biz_id,
+			link,
+			status,
+			creation_date
+		) 
+			VALUES
+		(
+			#{loginId,jdbcType=NUMERIC},
+			#{bizType,jdbcType=VARCHAR},
+			#{bizId,jdbcType=NUMERIC},
+			#{link,jdbcType=VARCHAR},
+			#{status,jdbcType=VARCHAR},
+			now()
+		)
+	</insert>
+	
+	<!-- 更新收藏状态 -->
+	<update id="updateCollectionStatus" parameterType="hashmap">
+		UPDATE tbl_cms_collection
+		SET status = #{status,jdbcType=VARCHAR}
+		WHERE  cust_id = #{loginId,jdbcType=NUMERIC}
+		AND biz_type = #{bizType,jdbcType=VARCHAR}
+		AND biz_id = #{bizId,jdbcType=NUMERIC}
+	</update>
+	
+	<!-- 获取类型 -->
+	<select id="queryCollectionType" parameterType="hashmap" resultType="hashmap">
+		SELECT 
+			biz_id,link
+		FROM 
+			tbl_cms_collection
+		WHERE 
+			cust_id = #{loginId,jdbcType=NUMERIC}
+		AND 
+			biz_type = #{bizType,jdbcType=VARCHAR}
+		AND status = '1'
+	</select>
+	
+	<select id="queryCollectionTypeCount" parameterType="hashmap" resultType="java.lang.Integer">
+		SELECT 
+			COUNT(*)
+		FROM 
+			tbl_cms_collection
+		WHERE 
+			cust_id = #{loginId,jdbcType=NUMERIC}
+		AND 
+			biz_type = #{bizType,jdbcType=VARCHAR}
+		AND status = '1'
+	</select>
+	
+	<select id="queryPartnerById" parameterType="hashmap" resultType="hashmap">
+		<![CDATA[
+			select 
+			a.id,a.name,a.latitude,a.longitude,a.business_hours,a.address,
+			a.contacts,a.tel,ifnull(a.score,0) as score,'小型车普洗28元 大型车普洗30元' as summary ,
+			a.service_type,
+			(select concat(#{_maint_path},file_path,'/',file_name) from maintenance_test.tbl_sys_file where biz_type='DIC_PARTNER_PIC' and file_type='lbt' and biz_id=a.id limit 0,1) as file_path,
+			(select count(*) from maintenance_test.tbl_order where partner_id=a.id and pay_status='2') as order_count,
+			(case when hour(now())>9 and hour(now())<=16 then 'Y' else 'N' end) as isWork
+			from maintenance_test.tbl_partner a where a.status='1' and a.id=#{id,jdbcType=NUMERIC}
+			order by a.score desc
+		]]>
+	</select>
+</mapper>

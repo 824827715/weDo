@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zhby.cms.mapper.FileMapper">
+
+	<resultMap type="FileObj" id="resultMap">
+		<id property="id" column="id" />
+		<result property="infoId" column="info_id" />
+		<result property="bizType" column="biz_type" />
+		<result property="contentType" column="content_type" />
+		<result property="filePath" column="file_path" />
+		<result property="fileSize" column="file_size" />
+		<result property="fileName" column="file_name" />
+		<result property="fileOriginalName" column="file_original_name" />
+		<result property="creationDate" column="creation_date" />
+	</resultMap>
+	
+	<sql id="table">
+		tbl_cms_file
+	</sql>
+	
+	<sql id="conditions">
+		<where>
+			<if test="id != null">
+				and id = #{id,jdbcType=NUMERIC}
+			</if>
+			<if test="infoId != null">
+				and info_id = #{infoId,jdbcType=NUMERIC}
+			</if>
+			<if test="bizType != null">
+				and biz_type = #{bizType,jdbcType=VARCHAR}
+			</if>
+		</where>
+	</sql>
+	
+	<insert id="insert" parameterType="FileObj" keyProperty="id" useGeneratedKeys="true">
+		insert into <include refid="table" /> (
+			info_id, biz_type, content_type, file_path, file_size, file_name, file_original_name
+		) values (
+			#{infoId,jdbcType=NUMERIC},
+			#{bizType,jdbcType=VARCHAR}, 
+			#{contentType,jdbcType=VARCHAR}, 
+			#{filePath,jdbcType=VARCHAR}, 
+			#{fileSize,jdbcType=NUMERIC}, 
+			#{fileName,jdbcType=VARCHAR}, 
+			#{fileOriginalName,jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<select id="list" parameterType="FileObj" resultMap="resultMap">
+		select * 
+		from <include refid="table" />
+		<include refid="conditions" />
+		order by id asc
+	</select>
+	
+	<update id="update" parameterType="FileObj">
+		update <include refid="table" /> set info_id = #{infoId,jdbcType=NUMERIC} where id = #{id,jdbcType=NUMERIC}
+	</update>
+	
+	<delete id="deleteById" parameterType="long">
+		delete from <include refid="table" /> where id = #{id,jdbcType=NUMERIC}
+	</delete>
+	
+	<delete id="deleteByInfoId" parameterType="long">
+		delete from <include refid="table" /> where info_id = #{infoId,jdbcType=NUMERIC}
+	</delete>
+	
+	<delete id="unBindFileAndInfo" parameterType="map">
+		delete from <include refid="table" /> 
+		where info_id=#{infoId,jdbcType=NUMERIC} and id not in 
+		<foreach item="item" index="index" collection="ids" open="(" separator="," close=")"> 
+			#{item}
+		</foreach>
+	</delete>
+	
+	<update id="bindFileAndInfo" parameterType="map">
+		update <include refid="table" /> set info_id=#{infoId,jdbcType=NUMERIC} 
+		where id in
+		<foreach item="item" index="index" collection="ids" open="(" separator="," close=")"> 
+			#{item}
+		</foreach>
+	</update>
+	
+	<select id="queryFileByInfoId" parameterType="java.lang.Long" resultMap="resultMap">
+		SELECT CONCAT(file_path,'/',file_name) as file_path,file_name,file_size FROM tbl_cms_file
+		WHERE info_id = #{infoId,jdbcType=NUMERIC}
+	</select>
+	
+	<!-- 获取咨询图片 -->
+	<select id="queryMiFileByInfoId" parameterType="java.lang.Long" resultType="java.lang.String">
+		SELECT f_get_file_url(file_path,file_name) as filePath
+		FROM tbl_cms_file
+		WHERE info_id = #{infoId,jdbcType=NUMERIC}
+	</select>
+	
+</mapper>
+

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<transaction>
+	<action>queryInfoList</action>
+	<status>1</status>
+	<data-type>01</data-type>
+	<login-required>false</login-required>
+	<module>jcms</module>
+	<desc>获取咨询列表</desc>
+	<params>
+		<param>
+			<name>page</name>
+			<type>number</type>
+			<required>false</required>
+			<default-value>1</default-value>
+			<desc>页数</desc>
+		</param>
+		<param>
+			<name>rows</name>
+			<type>number</type>
+			<required>false</required>
+			<default-value>10</default-value>
+			<desc>每页条数</desc>
+		</param>
+	</params>
+	<steps>
+		<step id="step1" class="com.zhby.cms.step.QueryInfoListStep">
+			<resource>cms.queryMiInfoList</resource>
+		</step>
+	</steps>
+</transaction>

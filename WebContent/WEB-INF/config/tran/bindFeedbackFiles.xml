@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<transaction>
+	<action>bindFeedbackFiles</action>
+	<status>1</status>
+	<data-type>01</data-type>
+	<desc>文件上传成功后,绑定业务Id</desc>
+	<module>jcms</module>
+	<params>
+		<param>
+			<name>feedbackId</name>
+			<type>number</type>
+			<required>true</required>
+			<desc>反馈信息主键</desc>
+		</param>
+		<param>
+			<name>bizType</name>
+			<type>string</type>
+			<default-value>feedback</default-value>
+			<desc>业务类型</desc>
+		</param>
+		<param>
+			<name>_file_data</name>
+			<type>string</type>
+			<required>true</required>
+			<desc>上传的文件结果集,格式为JSON数组</desc>
+		</param>
+	</params>
+	<steps>
+		<step id="step1" class="com.zhby.cms.step.BindFeedbackFilesStep" />
+	</steps>
+</transaction>

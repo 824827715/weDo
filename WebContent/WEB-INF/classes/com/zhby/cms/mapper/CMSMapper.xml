@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cms">
+
+	<resultMap type="hashmap" id="categoryResultMap">
+		<id property="id" column="id" />
+		<result property="parentId" column="parent_id" />
+		<result property="name" column="name" />
+		<result property="code" column="code" />
+		<result property="summary" column="summary" />
+	</resultMap>
+	
+	<resultMap type="CMSInfo" id="infoResultMap">
+		<id property="id" column="id" />
+		<result property="categoryName" column="category_name" />
+		<result property="title" column="title" />
+		<result property="summary" column="summary" />
+		<result property="content" jdbcType="CLOB" javaType = "java.lang.String" column="content" />
+		<result property="dataType" column="data_type" />
+		<result property="infoType" column="info_type" />
+		<result property="link" column="link" />
+		<result property="videoUrl" column="video_url" />
+		<result property="hdVideoUrl" column="hd_video_url" />
+		<result property="videoPeriod" column="video_period" />
+		<result property="videoTime" column="video_time" />
+		<result property="viewType" column="view_type" />
+		<result property="source" column="source" />
+		<result property="hits" column="hits" />
+		<result property="upvote" column="upvote" />
+		<result property="isTop" column="is_top" />
+		<result property="creationDate" column="creation_date" />
+		<collection property="files" ofType="CMSFile" javaType="ArrayList"  column="id" select="selectFiles"/>
+	</resultMap>
+	
+	<resultMap type="hashmap" id="miInfoResultMap">
+		<id property="id" column="id" />
+		<result property="categoryName" column="category_name" />
+		<result property="title" column="title" />
+		<result property="summary" column="summary" />
+		<result property="content" jdbcType="CLOB" javaType = "java.lang.String" column="content" />
+		<result property="infoType" column="info_type" />
+		<result property="videoUrl" column="video_url" />
+		<result property="hdVideoUrl" column="hd_video_url" />
+		<result property="videoPeriod" column="video_period" />
+		<result property="videoTime" column="video_time" />
+		<result property="viewType" column="view_type" />
+		<result property="source" column="source" />
+		<result property="hits" column="hits" />
+		<result property="upvote" column="upvote" />
+		<result property="isTop" column="is_top" />
+		<result property="creationDate" column="creation_date" />
+		<result property="editor" column="editor" />
+		<collection property="files" ofType="CMSFile" javaType="ArrayList"  column="id" select="selectFiles"/>
+	</resultMap>
+	
+	<resultMap type="CMSFile" id="fileResultMap">
+		<id property="id" column="id" />
+		<result property="bizType" column="biz_type" javaType="String" />
+		<result property="fileUrl" column="file_url" javaType="String" />
+		<result property="contentType" column="content_type" javaType="String"/>
+	</resultMap>		
+	
+	<sql id="category-columns">
+		 id,parent_id,name,code,summary
+	</sql>
+
+	<sql id="info-columns">
+		a.id, a.category_name, a.title, a.summary, a.view_type, a.url, a.hits, a.upvote, a.is_top, a.creator, a.creation_date
+	</sql>	
+
+	<select id="checkCategory" parameterType="hashmap" resultType="int">
+		select count(*) from tbl_cms_category
+		<where>
+			<if test="code != null and code != ''">
+				and code = #{code,jdbcType=VARCHAR}
+			</if>
+		</where>		
+	</select>
+	
+	<!-- 查询栏目信息 -->
+	<select id="getCategoryByCode" parameterType="hashmap" resultMap="categoryResultMap">
+		select <include refid="category-columns" /> 
+		from tbl_cms_category
+		<where>
+			<if test="code != null and code != ''">
+				and code = #{code,jdbcType=VARCHAR}
+			</if>
+		</where>
+	</select>
+	<!-- 子栏目查询 -->
+	<select id="querySubCategoryByCode" parameterType="hashmap" resultMap="categoryResultMap">
+		select <include refid="category-columns" /> 
+		from tbl_cms_category 
+		where parent_id=(
+			select id 
+			from tbl_cms_category 
+			where code=#{code,jdbcType=VARCHAR}
+		)
+	</select>
+	
+	<!-- 资源信息查询 -->
+	<select id="selectFiles" parameterType="int" resultMap="fileResultMap">
+		select 
+			id,biz_type,
+			content_type,
+			f_get_file_url(file_path,file_name) as file_url
+		from tbl_cms_file 
+		where info_id = #{infoId,jdbcType=NUMERIC}
+		order by id asc
+	</select>
+	
+	
+	<select id="queryInfoListByCode-count" parameterType="hashmap" resultType="int">
+		select 
+			count(1)
+		from 
+			tbl_cms_info a inner join tbl_cms_category b on a.category_id = b.id
+		where 
+			a.status='1' and b.code = #{code,jdbcType=VARCHAR}
+	</select>
+	
+	<select id="queryInfoListByCode" parameterType="hashmap" resultMap="infoResultMap">
+		select 
+			a.id, a.title, a.summary, a.view_type, a.source, a.link, a.info_type,
+			f_get_video_url(a.video_url) as video_url,
+			f_get_video_url(a.hd_video_url) as hd_video_url,
+			a.video_time, a.video_period, a.content,a.data_type,
+			a.hits, a.upvote, a.is_top, a.creation_date,b.name as category_name
+		from 
+			tbl_cms_info a inner join tbl_cms_category b on a.category_id = b.id
+		where
+			a.status='1' and b.code = #{code,jdbcType=VARCHAR}
+		order by a.id desc
+	</select>
+	
+	<select id="queryInfoListByHeadLine" parameterType="hashmap" resultMap="infoResultMap">
+		select 
+			a.id, a.title, a.summary, a.view_type, a.source, a.link, a.info_type,
+			f_get_video_url(a.video_url) as video_url,
+			f_get_video_url(a.hd_video_url) as hd_video_url,
+			a.video_time, a.video_period, 
+			a.hits, a.upvote, a.is_top, a.creation_date,b.name as category_name
+		from 
+			tbl_cms_info a inner join tbl_cms_category b on a.category_id = b.id
+		where
+			a.status='1' and a.head_line='1'
+		order by a.id desc
+	</select>
+	<!-- 获取首页所有头条 -->
+	<select id="queryIndexHeadline" parameterType="java.lang.String" resultType="hashmap">
+		select
+			a.id,a.title,a.summary,CONCAT(a.link,'?id=',a.id) AS link,b.name as categoryName,a.modification_date as modificationDate
+		from 
+			tbl_cms_info a
+		inner join 
+			tbl_cms_category b 
+			on a.category_id = b.id
+		where b.id in 
+		(
+			select id 
+			from 
+			tbl_cms_category 
+			where parent_code = #{code,jdbcType=VARCHAR}
+		)
+			and a.status = '1'
+			and a.head_line = '1'
+		order by a.modification_date desc
+	</select>
+	
+	<!-- 获取首页单项头条 -->
+	<select id="queryIndexHeadlineSingle" parameterType="java.lang.String" resultType="hashmap">
+		select
+			a.id,a.title,a.summary,CONCAT(a.link,'?id=',a.id) AS link,b.name as categoryName,a.modification_date as modificationDate
+		from 
+			tbl_cms_info a 
+		inner join 
+			tbl_cms_category b 
+			on a.category_id = b.id
+		where b.code = #{code,jdbcType=VARCHAR}
+			and a.status = '1' 
+			and a.head_line = '1'
+		order by a.modification_date desc
+	</select>
+	
+	<!-- 获取公共广告 -->
+	<select id="queryAdListCarousel" parameterType="java.lang.String" resultType="hashmap">
+		SELECT f_get_file_url(a.file_path,a.file_name) AS filePath,IFNULL(b.link,'#') AS link
+		FROM tbl_cms_file a 
+		LEFT JOIN tbl_cms_info b ON a.info_id = b.id
+		LEFT JOIN tbl_cms_category c ON b.category_id = c.id
+		WHERE c.code = #{code,jdbcType=VARCHAR}
+		AND b.status = '1'
+	</select>
+	
+	<!-- 获取咨询列表 -->
+	<select id="queryMiInfoList" parameterType="hashmap" resultType="hashmap">
+		SELECT
+		id,title,summary,hits,source,creation_date AS creationDate,CONCAT(link,'?id=',id) AS link,view_type as viewType
+		FROM tbl_cms_info
+		WHERE status = '1' AND info_type = '1' AND head_line != '1'
+		AND category_id in (
+			SELECT id FROM tbl_cms_category WHERE parent_code in ('APP_INDEX_HEADLINE','01')
+		)
+		AND date_format(creation_date,'%Y-%m-%d') >= '2017-01-01'
+		ORDER BY modification_date DESC
+	</select>
+	
+		<!-- 获取咨询列表（收藏列表） -->
+	<select id="queryMiInfoListById" parameterType="hashmap" resultType="hashmap">
+		SELECT
+		id,title,summary,hits,source,creation_date AS creationDate,CONCAT(link,'?id=',id) AS link,view_type as viewType
+		FROM tbl_cms_info
+		WHERE status = '1' AND info_type = '1'
+		AND category_id in (
+			SELECT id FROM tbl_cms_category WHERE parent_code = 'APP_INDEX_HEADLINE'
+		)
+		AND id = #{id,jdbcType=NUMERIC}
+	</select>
+	
+	<!-- 获取咨询数量 -->
+	<select id="queryMiInfoListCount" parameterType="hashmap" resultType="java.lang.Integer">
+		SELECT 
+		COUNT(*)
+		FROM tbl_cms_info
+		WHERE status = '1' AND info_type = '1' AND head_line != '1'
+		AND category_id in (
+			SELECT id FROM tbl_cms_category WHERE parent_code in ('APP_INDEX_HEADLINE','01')
+		)
+		AND date_format(creation_date,'%Y-%m-%d') >= '2017-01-01'
+	</select>
+	<!-- 获取咨询详情 -->
+	<select id="getMiInfoById" parameterType="hashmap" resultMap="miInfoResultMap">
+		select 
+			a.id, a.title, a.summary,a.info_type,
+			f_get_video_url(a.video_url) as video_url,
+			f_get_video_url(a.hd_video_url) as hd_video_url, 
+			a.video_period, a.video_time,
+			a.source, a.hits, a.upvote, a.is_top, a.content, a.creation_date,
+			b.name as category_name,c.name as editor
+		from 
+			tbl_cms_info a 
+		inner join tbl_cms_category b on a.category_id = b.id
+		left join tbl_cms_user c on a.creator = c.id
+		where a.id = #{id,jdbcType=NUMERIC}
+		and a.info_type = '1'
+	</select>
+	
+	<select id="getInfoById" parameterType="hashmap" resultMap="infoResultMap">
+		select 
+			a.id, a.title, a.summary, a.link, a.view_type,a.info_type,
+			f_get_video_url(a.video_url) as video_url,
+			f_get_video_url(a.hd_video_url) as hd_video_url, 
+			a.video_period, a.video_time,
+			a.source, a.hits, a.upvote, a.is_top, a.content, a.creation_date,
+			b.name as category_name
+		from 
+			tbl_cms_info a inner join tbl_cms_category b on a.category_id = b.id
+		where a.id = #{id,jdbcType=NUMERIC}
+	</select>
+	<!-- 阅读数 -->
+	<update id="updateInfoHits" parameterType="hashmap">
+		update tbl_cms_info set hits = (hits + 1) where id=#{id,jdbcType=NUMERIC}
+	</update>
+	<!-- 点赞 -->
+	<update id="updateInfoUpvote" parameterType="hashmap">
+		update tbl_cms_info set upvote = #{upvote,jdbcType=NUMERIC} where id=#{id,jdbcType=NUMERIC}
+	</update>
+	<!-- 获取消息中心数据 -->
+	<select id="queryMessage" parameterType="hashmap" resultType="hashmap">
+	select
+	a.id,a.title,a.summary,a.content,a.modification_date as modificationDate,a.link
+	from tbl_cms_info a 
+	left join tbl_cms_category b on a.category_id = b.id
+	where b.parent_code = 'APP_MESSAGE'
+	and a.status = '1'
+	ORDER BY modification_date DESC
+	</select>
+	
+	<!-- 资讯点赞 -->
+	<update id="increaseUpvote" parameterType="java.lang.Long">
+		update tbl_cms_info set upvote = (upvote + 1) where id=#{bizId,jdbcType=NUMERIC}
+	</update>	
+	<!-- 资讯取消赞 -->
+	<update id="decreaseUpvote" parameterType="java.lang.Long">
+		update tbl_cms_info set upvote = (upvote - 1) where id=#{bizId,jdbcType=NUMERIC}
+	</update>	
+</mapper>
+
+
+
+
+
+
+
+		

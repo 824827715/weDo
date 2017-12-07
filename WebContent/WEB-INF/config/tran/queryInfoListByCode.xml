@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<transaction>
+	<action>queryInfoListByCode</action>
+	<status>1</status>
+	<data-type>01</data-type>
+	<login-required>false</login-required>
+	<module>jcms</module>
+	<desc>信息列表</desc>
+	<params>
+		<param>
+				<name>code</name>
+				<type>string</type>
+				<required>true</required>
+				<default-value>00</default-value>
+				<desc>类型编码</desc>
+			</param>
+			<param>
+				<name>page</name>
+				<type>number</type>
+				<required>false</required>
+				<default-value>1</default-value>
+				<desc>页数</desc>
+			</param>
+			<param>
+				<name>rows</name>
+				<type>number</type>
+				<required>false</required>
+				<default-value>15</default-value>
+				<desc>每页显示条数</desc>
+			</param>
+	</params>
+	<steps>
+		<step id="step1" class="com.zhby.jservice.steps.db.SelectListPageStep">
+			<resource>cms.queryInfoListByCode</resource>
+			<ext1>cms.queryInfoListByCode-count</ext1>
+		</step>
+	</steps>
+</transaction>

@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zhby.cms.mapper.InfoMapper">
+
+	<resultMap type="InfoObj" id="listResult">
+		<id property="id" column="id" />
+		<result property="siteId" column="site_id" />
+		<result property="categoryId" column="category_id" />
+		<result property="categoryName" column="category_name" />
+		<result property="title" column="title" />
+		<result property="infoType" column="info_type" />
+		<result property="summary" column="summary" />
+		<result property="status" column="status" />
+		<result property="viewType" column="view_type" />
+		<result property="dataType" column="data_type" />
+		<result property="headLine" column="head_line" />
+		<result property="link" column="link" />
+		<result property="videoUrl" column="video_url" />
+		<result property="hdVideoUrl" column="hd_video_url" />
+		<result property="videoPeriod" column="video_period" />
+		<result property="videoTime" column="video_time" />
+		<result property="hits" column="hits" />
+		<result property="isTop" column="is_top" />
+		<result property="source" column="source" />
+		<result property="creator" column="creator" />
+		<result property="creationDate" column="creation_date" />
+		<result property="modifier" column="modifier" />
+		<result property="modificationDate" column="modification_date" />
+	</resultMap>
+
+	<resultMap type="InfoObj" id="detailsResult">
+		<id property="id" column="id" />
+		<result property="siteId" column="site_id" />
+		<result property="categoryId" column="category_id" />
+		<result property="categoryName" column="category_name" />
+		<result property="title" column="title" />
+		<result property="summary" column="summary" />
+		<result property="content" jdbcType="CLOB" javaType = "java.lang.String" column="content" />
+		<result property="infoType" column="info_type" />
+		<result property="status" column="status" />
+		<result property="viewType" column="view_type" />
+		<result property="dataType" column="data_type" />
+		<result property="headLine" column="head_line" />
+		<result property="link" column="link" />
+		<result property="videoUrl" column="video_url" />
+		<result property="hdVideoUrl" column="hd_video_url" />
+		<result property="videoPeriod" column="video_period" />
+		<result property="videoTime" column="video_time" />
+		<result property="hits" column="hits" />
+		<result property="isTop" column="is_top" />
+		<result property="source" column="source" />
+		<result property="creator" column="creator" />
+		<result property="creationDate" column="creation_date" />
+		<result property="modifier" column="modifier" />
+		<result property="modificationDate" column="modification_date" />
+	</resultMap>
+		
+	<sql id="table">
+		tbl_cms_info
+	</sql>
+	
+	<sql id="columns">
+		 id, title, summary, head_line, status, hits, creator, creation_date
+	</sql>
+	
+	<sql id="conditions">
+		<where>
+			<if test="id!=null">
+				and a.id = #{id,jdbcType=NUMERIC}
+			</if>
+			<if test="categoryId!=null">
+				and a.category_id = #{categoryId,jdbcType=NUMERIC}
+			</if>
+			<if test="status!=null and status!=''">
+				and a.status = #{status,jdbcType=VARCHAR}
+			</if>
+			<if test="title != null and title != ''">
+				and a.title like '%${title}%'
+			</if>
+			<if test="infoType != null and infoType != ''">
+				and a.info_type = #{infoType,jdbcType=VARCHAR}
+			</if>
+			<if test="headLine != null and headLine != ''">
+				and a.head_line = #{headLine,jdbcType=VARCHAR}
+			</if>
+		</where>
+	</sql>
+	
+	<sql id="orderby">
+		<if test="sort=='id'.toString()">
+			order by a.id ${order}
+		</if>
+		<if test="sort=='title'.toString()">
+			order by a.title ${order}
+		</if>
+		<if test="sort=='status'.toString()">
+			order by a.status ${code}
+		</if>
+	</sql>
+	
+	<select id="count" parameterType="InfoObj" resultType="int">
+		select count(*)
+		from tbl_cms_info a inner join tbl_cms_category b on a.category_id=b.id
+		<include refid="conditions"/>  
+	</select>
+		
+	<select id="listPage" parameterType="InfoObj" resultMap="listResult">
+		select 
+			a.*,CONCAT((select name from tbl_cms_category where code = b.parent_code),'->',b.name) as category_name
+		from tbl_cms_info a inner join tbl_cms_category b on a.category_id=b.id
+		<include refid="conditions"/> 
+		<include refid="orderby"/> 
+	</select>
+	
+	<insert id="insert" parameterType="InfoObj" useGeneratedKeys="true" keyProperty="id">
+		insert into <include refid="table" /> (
+			site_id,
+			category_id,
+			title,
+			summary,
+			content,
+			info_type,
+			status,
+			head_line,
+			hits,
+			link,
+			video_url,
+			hd_video_url,
+			video_period,
+			video_time,
+			is_top,
+			source,
+			view_type,
+			data_type,
+			head_line,
+			creator,
+			creation_date
+		) values (
+			#{siteId,jdbcType=NUMERIC}, 
+			#{categoryId,jdbcType=NUMERIC}, 
+			#{title,jdbcType=VARCHAR}, 
+			#{summary,jdbcType=VARCHAR}, 
+			#{content,jdbcType=VARCHAR}, 
+			#{infoType,jdbcType=VARCHAR}, 
+			#{status,jdbcType=VARCHAR}, 
+			'0',
+			#{hits,jdbcType=NUMERIC}, 
+			#{link,jdbcType=VARCHAR}, 
+			#{videoUrl,jdbcType=VARCHAR}, 
+			#{hdVideoUrl,jdbcType=VARCHAR}, 
+			#{videoPeriod,jdbcType=NUMERIC}, 
+			#{videoTime,jdbcType=VARCHAR}, 
+			#{isTop,jdbcType=VARCHAR}, 
+			#{source,jdbcType=VARCHAR}, 
+			#{viewType,jdbcType=VARCHAR}, 
+			#{dataType,jdbcType=VARCHAR}, 
+			#{headLine,jdbcType=VARCHAR}, 
+			#{creator,jdbcType=NUMERIC}, 
+			now()
+		)
+	</insert>	
+	
+	<select id="getById" parameterType="long" resultMap="detailsResult">
+		select a.*,b.name as category_name
+		from tbl_cms_info a inner join tbl_cms_category b on a.category_id=b.id
+		where a.id = #{id,jdbcType=NUMERIC}
+	</select>
+
+	<delete id="deleteById" parameterType="long">
+		delete from <include refid="table" /> where id = #{id,jdbcType=NUMERIC}
+	</delete>
+	
+	<update id="publish" parameterType="InfoObj">
+		update <include refid="table" /> 
+		set status=#{status,jdbcType=VARCHAR},
+		modification_date = now()
+		where id=#{id,jdbcType=NUMERIC}
+	</update>
+	
+	<update id="headline" parameterType="InfoObj">
+		update <include refid="table" /> set head_line=#{headLine,jdbcType=VARCHAR} 
+		where id=#{id,jdbcType=NUMERIC}
+	</update>
+	
+	<update id="update" parameterType="InfoObj">
+		update <include refid="table" />
+		<set>
+			<if test="categoryId != null">category_id = #{categoryId,jdbcType=NUMERIC},</if>
+			<if test="title != null">title = #{title,jdbcType=VARCHAR},</if>
+			<if test="summary != null">summary = #{summary,jdbcType=VARCHAR},</if>
+			<if test="content != null">content = #{content,jdbcType=CLOB},</if>
+			<if test="status != null">status = #{status,jdbcType=VARCHAR},</if>
+			<if test="link != null">link = #{link,jdbcType=VARCHAR},</if>
+			<if test="videoUrl != null">video_url = #{videoUrl,jdbcType=VARCHAR},</if>
+			<if test="hdVideoUrl != null">hd_video_url = #{hdVideoUrl,jdbcType=VARCHAR},</if>
+			<if test="videoPeriod != null">video_period = #{videoPeriod,jdbcType=NUMERIC},</if>
+			<if test="videoTime != null">video_time = #{videoTime,jdbcType=VARCHAR},</if>
+			<if test="viewType != null">view_type = #{viewType,jdbcType=VARCHAR},</if>
+			<if test="dataType != null">data_type = #{dataType,jdbcType=VARCHAR},</if>
+			<if test="headLine != null">head_line = #{headLine,jdbcType=VARCHAR},</if>
+			<if test="hits != null">hits = #{hits,jdbcType=NUMERIC},</if>
+			<if test="isTop != null">is_top = #{isTop,jdbcType=VARCHAR},</if>
+			<if test="source != null">source = #{source,jdbcType=VARCHAR},</if>
+			<if test="modifier != null">modifier = #{modifier,jdbcType=NUMERIC},</if>
+			modification_date = now()
+		</set>
+		where id = #{id,jdbcType=NUMERIC}
+	</update>
+	
+	<!-- 根据栏目编码查询对应轮播图 -->
+	<select id="queryIndexCarousel" parameterType="java.lang.String" resultType="hashmap">
+		select
+			a.id,a.title,a.summary,a.link,
+			CONCAT(c.file_path,'/',c.file_name) as filePath,
+			b.name as categoryName
+		from 
+			tbl_cms_info a 
+		left join 
+			tbl_cms_category b 
+			on a.category_id = b.id
+		left join 
+			tbl_cms_file c 
+			on a.id = c.info_id
+		where a.status = '1'
+		and b.code = #{code,jdbcType=VARCHAR}
+	</select>
+	
+</mapper>
+		

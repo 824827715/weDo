@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhby.mapservice.mapper.BranchMapper">
+	<resultMap type="BranchObj" id="queryResultMap">
+		<id property="id" column="id"/>
+		<result property="cityId" column="city_id"/>
+		<result property="branchCode" column="branch_code"/>
+		<result property="carNumType" column="car_num_type"/>
+		<result property="branchTypeCode" column="branch_type_code"/>
+		<result property="title" column="title"/>
+		<result property="contactPhone" column="contact_phone"/>
+		<result property="contactAddress" column="contact_address"/>
+		<result property="longitude" column="longitude"/>
+		<result property="latitude" column="latitude"/>
+		<result property="workTimeDesc" column="work_time_desc"/>
+		<result property="serviceDesc" column="service_desc"/>
+	</resultMap>
+	
+	<sql id="table">
+		tbl_map_service_branch
+	</sql>
+	
+	<sql id="columns">
+		*
+	</sql>
+	
+	<select id="listPage" parameterType="BranchObj" resultMap="queryResultMap">
+		SELECT <include refid="columns" />
+		FROM <include refid="table" />
+		ORDER BY id ASC
+	</select>
+	
+	<select id="count" parameterType="BranchObj" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM
+			<include refid="table" />
+	</select>
+	
+	<select id="getById" parameterType="long" resultMap="queryResultMap">
+		SELECT
+			<include refid="columns" />
+		FROM
+			 <include refid="table" />
+		WHERE id = #{id,jdbcType=NUMERIC}
+	</select>
+	
+	<update id="update" parameterType="BranchObj">
+		UPDATE <include refid="table" />
+		<set>
+			<if test="title != null">title = #{title,jdbcType=VARCHAR},</if>
+			<if test="contactPhone != null">contact_phone = #{contactPhone,jdbcType=VARCHAR},</if>
+			<if test="contactAddress != null">contact_address = #{contactAddress,jdbcType=VARCHAR},</if>
+			<if test="longitude != null">longitude = #{longitude,jdbcType=VARCHAR},</if>
+			<if test="latitude != null">latitude = #{latitude,jdbcType=VARCHAR},</if>
+			<if test="workTimeDesc != null">work_time_desc = #{workTimeDesc,jdbcType=VARCHAR},</if>
+			<if test="serviceDesc != null">service_desc = #{serviceDesc,jdbcType=VARCHAR},</if>
+		</set>
+		WHERE id = #{id,jdbcType=NUMERIC}	
+	</update>
+</mapper>

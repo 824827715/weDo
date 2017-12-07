@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<transaction>
+	<action>checkCollectionStatus</action>
+	<status>1</status>
+	<data-type>01</data-type>
+	<login-required>false</login-required>
+	<module>jcms</module>
+	<desc>检查收藏状态</desc>
+	<params>
+		<param>
+			<name>bizId</name>
+			<type>number</type>
+			<required>true</required>
+			<desc>该条被收藏id</desc>
+		</param>
+		<param>
+			<name>bizType</name>
+			<type>string</type>
+			<required>true</required>
+			<desc>该条被收藏对应类型</desc>
+		</param>
+		<param>
+			<name>loginId</name>
+			<type>number</type>
+			<required>false</required>
+			<desc>登录和注册接口返回的用户名</desc>
+		</param>
+	</params>
+	<steps>
+		<step id="step1" class="com.zhby.cms.step.CheckCollectionStatusStep"/>
+	</steps>
+</transaction>

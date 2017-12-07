@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhby.cms.mapper.FeedbackMapper">
+	<resultMap type="hashmap" id="feedBackMap">
+		<id property="id" column="id" />
+		<result property="custId" column="cust_id" />
+		<result property="phone" column="phone" />
+		<result property="custName" column="cust_name" />
+		<result property="createTime" column="create_time" />
+		<result property="feedbackType" column="title" />
+	</resultMap>
+
+	<!-- 反馈列表 -->
+	<select id="listPage" parameterType="hashmap" resultMap="feedBackMap">
+		select
+			id,
+			cust_id,
+			phone,
+			cust_name,
+			create_time
+		from tbl_cms_feedback
+		order by create_time desc
+	</select>
+
+	<select id="count" parameterType="hashmap" resultType="int">
+		select
+		count(*)
+		from tbl_cms_feedback
+	</select>
+
+	<!-- 反馈详情 -->
+
+	<select id="details" parameterType="long" resultMap="feedBackMap">
+		SELECT
+			a.*,b.category_id as title
+		FROM tbl_cms_feedback a 
+		LEFT JOIN tbl_cms_feedback_details b ON a.id = b.feedback_id
+		WHERE a.id = #{feedbackId,jdbcType=NUMERIC}
+	</select>
+
+
+
+
+
+
+	<!-- 查询反馈信息选项 -->
+	<select id="queryFeedbackOptions" parameterType="hashmap"
+		resultType="hashmap">
+		SELECT
+			id,title
+		FROM
+			tbl_cms_feedback_category
+	</select>
+	
+	<!-- 增加反馈信息 -->
+		<insert id="insertmain"  parameterType="hashmap" keyProperty="id" useGeneratedKeys="true">
+			insert into tbl_cms_feedback (
+				cust_id, phone, cust_name, content, create_time
+			) values (
+				#{loginId,jdbcType=NUMERIC}, 
+				#{phone,jdbcType=VARCHAR}, 
+				#{custName,jdbcType=VARCHAR}, 
+				#{content,jdbcType=VARCHAR}, 
+				now()
+			)
+		</insert>
+			
+		<insert id="insertdetails"  parameterType="hashmap">
+			insert into tbl_cms_feedback_details (
+				feedback_id, category_id
+			) values (
+				#{feedbackId,jdbcType=NUMERIC}, 
+				#{categoryId,jdbcType=NUMERIC}
+			)
+		</insert>
+		
+		<update id="updateFeedback" parameterType="hashmap">
+			update tbl_cms_feedback
+			<set>
+				<if test="attachment != null">
+					attachment = #{attachment},
+				</if>
+			</set>
+			where id = #{feedbackId}
+		</update>
+		
+		<select id="getTitle" parameterType="String" resultType="String">
+			select
+				title
+			from 
+				tbl_cms_feedback_category
+			where 
+				id = #{categoryId}
+		</select>
+</mapper>

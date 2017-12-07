@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<transaction>
+	<action>queryIndexHeadline</action>
+	<status>1</status>
+	<data-type>01</data-type>
+	<login-required>false</login-required>
+	<module>jcms</module>
+	<desc>获取首页头条信息</desc>
+	<params>
+		<param>
+			<name>code</name>
+			<type>string</type>
+			<required>true</required>
+			<desc>mi头条栏目编码</desc>
+		</param>
+	</params>
+	<steps>
+		<step id="checkCode" class="com.zhby.jservice.steps.db.SelectCountStep">
+			<resource>com.zhby.cms.mapper.CategoryMapper.checkCode</resource>
+		</step>
+		<step id="step1" class="com.zhby.cms.step.QueryIndexHeadlineStep">
+			<resource>com.zhby.cms.mapper.CategoryMapper.queryParentCodeByCode</resource>
+			<ext1>cms.queryIndexHeadlineSingle</ext1>
+			<ext2>cms.queryIndexHeadline</ext2>
+		</step>
+	</steps>
+</transaction>

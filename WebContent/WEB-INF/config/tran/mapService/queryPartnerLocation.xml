@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<transaction>
+	<action>queryPartnerLocation</action>
+	<status>1</status>
+	<data-type>01</data-type>
+	<login-required>false</login-required>
+	<module>mapservice</module>
+	<desc>根据经纬度查询1公里范围内的洗车店</desc>
+	<params>
+		<param>
+			<name>longitude</name>
+			<type>string</type>
+			<required>true</required>
+			<desc>经度</desc>
+		</param>
+		<param>
+			<name>latitude</name>
+			<type>string</type>
+			<required>true</required>
+			<desc>纬度</desc>
+		</param>
+		<param>
+			<name>serviceType</name>
+			<type>string</type>
+			<required>true</required>
+			<desc>服务类型 2养车 3洗车</desc>
+		</param>
+	</params>
+	<steps>
+		<step id="step1" class="com.zhby.mapservice.step.QueryPartnerLocationStep"/>
+	</steps>
+</transaction>
